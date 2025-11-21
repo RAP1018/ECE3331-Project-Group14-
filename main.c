@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h> // the allows us to have an exit code if return =1
 #include <string.h>
+#include "regex.h"
 // these headers allow us to do common cammand like print, scan, 
 //allows strings and the standard library.
 
-int Match(int const char *pattern, const char *text);
+//int Match(int const char *pattern, const char *text);
 // declaring our function
 
 int main(int x, char *arr[]){
@@ -26,7 +27,7 @@ int main(int x, char *arr[]){
         return 1; // we will exit if file is invaild.
     }
 // We can assume the file is vaild, now we can read each line of the file.
-    while(fget(line, sizeof(line), fin )!= NULL){
+    while(fgets(line, sizeof(line), fin )!= NULL){
         // if these are all vaild.
         line_number++;// count each line.
 
@@ -46,5 +47,6 @@ int main(int x, char *arr[]){
     // I think now we can close the file.
     fclose(fin);
     return 0; // It should be vaild !!!!!!
+
 
 }
