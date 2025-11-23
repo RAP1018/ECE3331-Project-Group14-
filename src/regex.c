@@ -1,4 +1,5 @@
 // regex.c — tiny engine with ^ $ . * ?  (simple and short)
+#include <stdio.h>
 #include <string.h>
 #include "regex.h"
 
@@ -44,6 +45,28 @@ static int match_here(const char *p, const char *t) {
     /* no quantifier: match one char */
     if (*t && (p[0] == '.' || *t == p[0]))
         return match_here(p + 1, t + 1);
+
+    return 0;
+}
+
+/* Read from an already-open FILE* line-by-line, apply Match(), print matches.
+   Returns 0 on success, 1 on immediate error (e.g., fin==NULL or pattern==NULL). */
+int search_file(FILE *fin, const char *pattern) {
+    if (fin == NULL || pattern == NULL) return 1;
+
+    char line[256];
+    int line_number = 0;
+
+    while (fgets(line, sizeof(line), fin) != NULL) {
+        line_number++;
+        size_t len = strlen(line);
+        if (len > 0 && line[len - 1] == '\n')
+            line[len - 1] = '\0';
+
+        if (Match(pattern, line)) {
+            printf("%3d: %s\n", line_number, line);
+        }
+    }
 
     return 0;
 }

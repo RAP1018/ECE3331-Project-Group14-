@@ -10,8 +10,10 @@
 
 int main(int x, char *arr[]){
     FILE *fin;
+    /*
     char line[256]; // i made this as a buffer hold each line from the test file.
     int line_number =0; // counter for the line.
+    */
 
     // we can start to check input for the filename and pattern.
     if(x != 3){
@@ -27,6 +29,7 @@ int main(int x, char *arr[]){
         return 1; // we will exit if file is invaild.
     }
 // We can assume the file is vaild, now we can read each line of the file.
+    /*
     while(fgets(line, sizeof(line), fin )!= NULL){
         // if these are all vaild.
         line_number++;// count each line.
@@ -44,9 +47,15 @@ int main(int x, char *arr[]){
             printf("%3d: %s\n", line_number,line);
         }
     }
-    // I think now we can close the file.
+    */
+
+    /* Using the centralized helper to do reading and matching. The original loop
+       above is left commented for review by the team. */
+    search_file(fin, arr[2]);
+
+    // Close the file and exit.
     fclose(fin);
-    return 0; // It should be vaild !!!!!!
+    return 0; // It should be valid !!
 
 
 }
