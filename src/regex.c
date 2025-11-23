@@ -1,4 +1,5 @@
-// regex.c — tiny engine with ^ $ . * ?  (simple and short)
+// Implement ^(beginning anchor) $(end snchor) .(match single character)
+// *(0 or more repitition) ?(0 or 1 repititions)  
 #include <string.h>
 #include "regex.h"
 
@@ -17,7 +18,7 @@ int Match(const char *pattern, const char *text) {
     return 0;
 }
 
-/* Core recursive matcher */
+/* recursive matching */
 static int match_here(const char *p, const char *t) {
     if (*p == '\0') return 1;                              /* end of pattern */
     if (p[0] == '$' && p[1] == '\0') return *t == '\0';    /* end anchor */
