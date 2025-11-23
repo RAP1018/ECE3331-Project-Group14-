@@ -25,12 +25,55 @@ static int match_here(const char *p, const char *t) {
     if (*p == '\0') return 1;                              /* end of pattern */
     if (p[0] == '$' && p[1] == '\0') return *t == '\0';    /* end anchor */
 
-    /* lookahead quantifiers: * and ? */
+/* Character match with * or ? */
+if (p[0] == '[') {
+    const char *end = strchr(p, ']');
+    if (!end) return 0;  
+
+    int contains = 0;
+    const char *q = p + 1;
+
+    while (q < end) {
+        if (*t == *q) {
+            contains = 1;
+            break;
+        }
+        q++;
+    }
+
+    // Character match 0 or more reps [abc]* 
+    if (end[1] == '*') {
+        const char *u = t;
+        // try zero or many
+        while (1) {
+            if (match_here(end + 2, u)) return 1;
+            if (!*u || !contains) break;
+            u++;
+            contains = (*u == q[0] || *u == q[1] || *u == q[2]); 
+        }
+        return 0;
+    }
+
+    /* Handle [abc]? : zero or one reps */
+    if (end[1] == '?') {
+        if (contains && match_here(end + 2, t + 1))
+            return 1;
+        return match_here(end + 2, t);  // zero case
+    }
+
+    /* Normal character [abc] match */
+    if (contains)
+        return match_here(end + 1, t + 1);
+
+    return 0;
+}
+    
+    /* lookahead * and ? */
     if (p[1] == '*') {
         const char c = p[0];
         const char *u = t;
         while (1) {
-            if (match_here(p + 2, u)) return 1;            /* 0 or more */
+            if (match_here(p + 2, u)) return 1;           
             if (*u == '\0') break;
             if (c != '.' && *u != c) break;
             u++;
@@ -43,29 +86,8 @@ static int match_here(const char *p, const char *t) {
             return 1;
         return match_here(p + 2, t);                       /* zero */
     }
-
-/* Character match [abc] */
-if (p[0] == '[') {
-    const char *end = strchr(p, ']');
-    if (!end) return 0;  
-
-    int matched = 0;
-    const char *q = p + 1;
-
-    while (q < end) {
-        if (*t == *q) {
-            matched = 1;
-            break;
-        }
-        q++;
-    }
-
-    if (matched)
-        return match_here(end + 1, t + 1);   
-    else
-        return 0;
-}
-    /* no quantifier: match one char */
+    
+    /* match one char */
     if (*t && (p[0] == '.' || *t == p[0]))
         return match_here(p + 1, t + 1);
 
