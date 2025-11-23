@@ -49,7 +49,15 @@ if (p[0] == '[') {
             if (match_here(end + 2, u)) return 1;
             if (!*u || !contains) break;
             u++;
-            contains = (*u == q[0] || *u == q[1] || *u == q[2]); 
+contains = 0;
+const char *qq = p + 1;
+while (qq < end) {
+    if (*u == *qq) {
+        contains = 1;
+        break;
+    }
+    qq++;
+}
         }
         return 0;
     }
