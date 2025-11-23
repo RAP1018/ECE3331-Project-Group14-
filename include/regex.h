@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 /* Returns 1 if text matches pattern, else 0.
-   Supported: ^ $ . * ?  (tiny per project spec) */
+   Supports: ^ $ . * ?  */
 int Match(const char *pattern, const char *text);
 
 /* Read from an already-open FILE* line-by-line, apply Match(), print matches.
