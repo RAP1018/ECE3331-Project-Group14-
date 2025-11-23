@@ -1,7 +1,7 @@
-// regex.c — tiny engine with ^ $ . * ?  (simple and short)
+// regex.c supports [abc] ^ $ . * ?  
 #include <stdio.h>
-// Implement ^(beginning anchor) $(end snchor) .(match single character)
-// *(0 or more repitition) ?(0 or 1 repititions)  
+// Implement [abc](character matching) ^(beginning anchor) $(end snchor) 
+// .(match single character) *(0 or more repitition) ?(0 or 1 repititions)  
 #include <string.h>
 #include "regex.h"
 
@@ -44,6 +44,27 @@ static int match_here(const char *p, const char *t) {
         return match_here(p + 2, t);                       /* zero */
     }
 
+/* Character match [abc] */
+if (p[0] == '[') {
+    const char *end = strchr(p, ']');
+    if (!end) return 0;  
+
+    int matched = 0;
+    const char *q = p + 1;
+
+    while (q < end) {
+        if (*t == *q) {
+            matched = 1;
+            break;
+        }
+        q++;
+    }
+
+    if (matched)
+        return match_here(end + 1, t + 1);   
+    else
+        return 0;
+}
     /* no quantifier: match one char */
     if (*t && (p[0] == '.' || *t == p[0]))
         return match_here(p + 1, t + 1);
@@ -52,7 +73,7 @@ static int match_here(const char *p, const char *t) {
 }
 
 /* Read from an already-open FILE* line-by-line, apply Match(), print matches.
-   Returns 0 on success, 1 on immediate error (e.g., fin==NULL or pattern==NULL). */
+   Returns 0 on success, 1 on immediate error */
 int search_file(FILE *fin, const char *pattern) {
     if (fin == NULL || pattern == NULL) return 1;
 
