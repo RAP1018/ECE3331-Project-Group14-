@@ -98,6 +98,12 @@ if (p[0] == '[') {
             return 1;
         return match_here(p + 2, t);                       
     }
+
+    /* Simple fix: if previous part matched a class ([ae]), keep matching normally */
+if (p[0] != '[' && p[0] != ']' && p[0] != '*' && p[0] != '?' ) {
+    if (*t && p[0] == *t)
+        return match_here(p + 1, t + 1);
+}
     
     /* match one char */
     if (*t && (p[0] == '.' || *t == p[0]))
