@@ -1,7 +1,5 @@
 // regex.c supports [abc] ^ $ . * ?  
 #include <stdio.h>
-// Implement [abc](character matching) ^(beginning anchor) $(end anchor) 
-// .(match single character) *(0 or more repetition) ?(0 or 1 repititions)  
 #include <string.h>
 #include "regex.h"
 
@@ -22,70 +20,71 @@ int Match(const char *pattern, const char *text) {
 
 /* recursive matching */
 static int match_here(const char *p, const char *t) {
-    if (*p == '\0') return 1;                              /* end of pattern */
-    if (p[0] == '$' && p[1] == '\0') return *t == '\0';    /* end anchor */
 
-/* Character matching [abc]  */
-if (p[0] == '[') {
+    if (*p == '\0') return 1;
+    if (p[0] == '$' && p[1] == '\0') return *t == '\0';
 
-    const char *end = strchr(p, ']');
-    if (!end) return 0;
+    /* Character class [abc] */
+    if (p[0] == '[') {
 
-    int contains = 0;
-    const char *q = p + 1;
+        const char *end = strchr(p, ']');
+        if (!end) return 0;
 
-    while (q < end) {
-        if (*t == *q) {
-            contains = 1;
-            break;
-        }
-        q++;
-    }
+        int contains = 0;
+        const char *q = p + 1;
 
-    /* [abc]* repetition */
-    if (end[1] == '*') {
-        const char *u = t;
-
-        while (1) {
-            if (match_here(end + 2, u)) return 1;
-            if (*u == '\0') break;
-
-            int inner_contains = 0;
-            const char *qq = p + 1;
-            while (qq < end) {
-                if (*u == *qq) {
-                    inner_contains = 1;
-                    break;
-                }
-                qq++;
+        while (q < end) {
+            if (*t == *q) {
+                contains = 1;
+                break;
             }
-
-            if (!inner_contains) break;
-            u++;
+            q++;
         }
+
+        /* [abc]* repetition */
+        if (end[1] == '*') {
+            const char *u = t;
+
+            while (1) {
+                if (match_here(end + 2, u)) return 1;
+                if (*u == '\0') break;
+
+                int inner_contains = 0;
+                const char *qq = p + 1;
+                while (qq < end) {
+                    if (*u == *qq) {
+                        inner_contains = 1;
+                        break;
+                    }
+                    qq++;
+                }
+
+                if (!inner_contains) break;
+                u++;
+            }
+            return 0;
+        }
+
+        /* [abc]? */
+        if (end[1] == '?') {
+            if (contains && match_here(end + 2, t + 1))
+                return 1;
+            return match_here(end + 2, t);
+        }
+
+        /* normal [abc] match */
+        if (contains)
+            return match_here(end + 1, t + 1);
+
         return 0;
     }
 
-    /* [abc]?  match */
-    if (end[1] == '?') {
-        if (contains && match_here(end + 2, t + 1))
-            return 1;
-        return match_here(end + 2, t);
-    }
-
-    /* Normal single-character match */
-    if (contains)
-        return match_here(end + 1, t + 1);
-
-    return 0;
-}  
-    
     /* lookahead * and ? */
     if (p[1] == '*') {
         const char c = p[0];
         const char *u = t;
         while (1) {
-            if (match_here(p + 2, u)) return 1;           
+            if (match_here(p + 2, u)) return 1;
             if (*u == '\0') break;
             if (c != '.' && *u != c) break;
             u++;
@@ -96,9 +95,17 @@ if (p[0] == '[') {
     if (p[1] == '?') {
         if (*t && (p[0] == '.' || *t == p[0]) && match_here(p + 2, t + 1))
             return 1;
-        return match_here(p + 2, t);                       
+        return match_here(p + 2, t);  
     }
-    
+
+    /* ----------------------------- */
+    /* SIMPLE FIX for h[ae]llo, etc. */
+    /* ----------------------------- */
+    if (*t && p[0] != '*' && p[0] != '?' && p[0] != '[' && p[0] != ']') {   // <-- FIX
+        if (p[0] == '.' || p[0] == *t)                                     // <-- FIX
+            return match_here(p + 1, t + 1);                               // <-- FIX
+    }                                                                       // <-- FIX
+
     /* match one char */
     if (*t && (p[0] == '.' || *t == p[0]))
         return match_here(p + 1, t + 1);
@@ -106,8 +113,7 @@ if (p[0] == '[') {
     return 0;
 }
 
-/* Read from an already-open FILE* line-by-line, apply Match(), print matches.
-   Returns 0 on success, 1 on immediate error */
+/* Read file, apply regex, print matches */
 int search_file(FILE *fin, const char *pattern) {
     if (fin == NULL || pattern == NULL) return 1;
 
@@ -116,6 +122,7 @@ int search_file(FILE *fin, const char *pattern) {
 
     while (fgets(line, sizeof(line), fin) != NULL) {
         line_number++;
+
         size_t len = strlen(line);
         if (len > 0 && line[len - 1] == '\n')
             line[len - 1] = '\0';
