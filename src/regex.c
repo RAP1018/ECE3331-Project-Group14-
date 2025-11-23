@@ -1,7 +1,7 @@
 // regex.c supports [abc] ^ $ . * ?  
 #include <stdio.h>
-// Implement [abc](character matching) ^(beginning anchor) $(end snchor) 
-// .(match single character) *(0 or more repitition) ?(0 or 1 repititions)  
+// Implement [abc](character matching) ^(beginning anchor) $(end anchor) 
+// .(match single character) *(0 or more repetition) ?(0 or 1 repititions)  
 #include <string.h>
 #include "regex.h"
 
@@ -25,10 +25,11 @@ static int match_here(const char *p, const char *t) {
     if (*p == '\0') return 1;                              /* end of pattern */
     if (p[0] == '$' && p[1] == '\0') return *t == '\0';    /* end anchor */
 
-/* Character match with * or ? */
+/* Character matching [abc]  */
 if (p[0] == '[') {
+
     const char *end = strchr(p, ']');
-    if (!end) return 0;  
+    if (!end) return 0;
 
     int contains = 0;
     const char *q = p + 1;
@@ -41,40 +42,43 @@ if (p[0] == '[') {
         q++;
     }
 
-    // Character match 0 or more reps [abc]* 
+    /* [abc]* repetition */
     if (end[1] == '*') {
         const char *u = t;
-        // try zero or many
+
         while (1) {
             if (match_here(end + 2, u)) return 1;
-            if (!*u || !contains) break;
+            if (*u == '\0') break;
+
+            int inner_contains = 0;
+            const char *qq = p + 1;
+            while (qq < end) {
+                if (*u == *qq) {
+                    inner_contains = 1;
+                    break;
+                }
+                qq++;
+            }
+
+            if (!inner_contains) break;
             u++;
-contains = 0;
-const char *qq = p + 1;
-while (qq < end) {
-    if (*u == *qq) {
-        contains = 1;
-        break;
-    }
-    qq++;
-}
         }
         return 0;
     }
 
-    /* Handle [abc]? : zero or one reps */
+    /* [abc]?  match */
     if (end[1] == '?') {
         if (contains && match_here(end + 2, t + 1))
             return 1;
-        return match_here(end + 2, t);  // zero case
+        return match_here(end + 2, t);
     }
 
-    /* Normal character [abc] match */
+    /* Normal single-character match */
     if (contains)
         return match_here(end + 1, t + 1);
 
     return 0;
-}
+}  
     
     /* lookahead * and ? */
     if (p[1] == '*') {
@@ -92,7 +96,7 @@ while (qq < end) {
     if (p[1] == '?') {
         if (*t && (p[0] == '.' || *t == p[0]) && match_here(p + 2, t + 1))
             return 1;
-        return match_here(p + 2, t);                       /* zero */
+        return match_here(p + 2, t);                       
     }
     
     /* match one char */
