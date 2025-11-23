@@ -79,6 +79,23 @@ if (p[0] == '[') {
 
     return 0;
 }  
+    /* Simple character class anywhere in the pattern: h[ae]llo */
+if (p[0] && p[1] == '[') {
+    const char *end = strchr(p+1, ']');
+    if (!end) return 0;
+
+    int contains = 0;
+    const char *q = p + 2; // skip "x["
+    while (q < end) {
+        if (*t == *q) contains = 1;
+        q++;
+    }
+
+    if (contains)
+        return match_here(end + 1, t + 1);
+
+    return 0;
+}
     
     /* lookahead * and ? */
     if (p[1] == '*') {
