@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h> // the allows us to have an exit code if return =1
 #include <string.h>
-#include "regex.h"
+#include "include/regex.h"
 // these headers allow us to do common cammand like print, scan, 
 //allows strings and the standard library.
 
@@ -59,3 +59,4 @@ int main(int x, char *arr[]){
 
 
 }
+
