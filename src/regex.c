@@ -97,14 +97,12 @@ static int match_here(const char *p, const char *t) {
             return 1;
         return match_here(p + 2, t);  
     }
-
-    /* ----------------------------- */
+    
     /* SIMPLE FIX for h[ae]llo, etc. */
-    /* ----------------------------- */
-    if (*t && p[0] != '*' && p[0] != '?' && p[0] != '[' && p[0] != ']') {   // <-- FIX
-        if (p[0] == '.' || p[0] == *t)                                     // <-- FIX
-            return match_here(p + 1, t + 1);                               // <-- FIX
-    }                                                                       // <-- FIX
+    if (*t && p[0] != '*' && p[0] != '?' && p[0] != '[' && p[0] != ']') {  
+        if (p[0] == '.' || p[0] == *t)                                     
+            return match_here(p + 1, t + 1);                               
+    }                                                                       
 
     /* match one char */
     if (*t && (p[0] == '.' || *t == p[0]))
